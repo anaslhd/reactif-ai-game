@@ -412,10 +412,11 @@ class Vehicle {
     return closestObstacle;
   }
 
-  arrive(target) {
+  arrive(target,d=0) {
     // 2nd argument true enables the arrival behavior
     return this.seek(target, true);
   }
+
 
   seek(target, arrival = false) {
     let force = p5.Vector.sub(target, this.pos);
@@ -437,15 +438,24 @@ class Vehicle {
   flee(target) {
     return this.seek(target).mult(-1);
   }
-  //pour implementer flee pour une cible
-  fleeWithTargetRadius(target) {
-    const d = this.pos.dist(target);
-    if (d < target.r + 10) {
-      // je fuis la cible, on réutilise le comportement flee
-      const fleeForce = this.flee(target);
-      fleeForce.mult(100);
-      this.applyForce(fleeForce);
-    }
+  //pour implementer flee pour les humain contre les zombies
+  fleeZombies(zombies) {
+    let fleeForce = createVector(0, 0);  // Force de fuite totale
+
+    zombies.forEach(zombie => {
+      const d = p5.Vector.dist(this.pos, zombie.pos);  // Calcul de la distance entre l'humain et le zombie
+      const threshold = 150;  // Distance de détection du zombie
+
+      if (d < threshold) {
+        const fleeDirection = p5.Vector.sub(this.pos, zombie.pos);  // Calculer la direction de fuite
+        fleeDirection.setMag(this.maxSpeed);  // Appliquer la vitesse maximale
+        const steering = p5.Vector.sub(fleeDirection, this.vel);  // Calculer la force de fuite
+        steering.limit(this.maxForce);  // Limiter la force
+        fleeForce.add(steering);  // Ajouter la force de fuite pour ce zombie
+      }
+    });
+
+    return fleeForce.mult(8);  // Retourner la force de fuite totale
   }
 
   /* Poursuite d'un point devant la target !

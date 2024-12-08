@@ -13,23 +13,23 @@ let zombieroar;
 let zombieeat;
 let audioContext;
 let isAudioContextInitialized = false;
+let mode ="snake";
 
 function preload(){
-  // Load assets
+  // on charge les images
   bgImage = loadImage("./assets/image.png");
   zombieimage = loadImage("./assets/zombie.png");
   obstacleimage = loadImage("./assets/obstacle.png");
   humanimage = loadImage('./assets/rick.png');
   
-  // Load sounds
+  // on charge les sons
   zombieroar = loadSound('./assets/zombieroar.mp3');
   zombieeat = loadSound('./assets/zombieeating.mp3');
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-
-  // Initialize zombies and humans
+//on initialise les zombies et les humains
   for (let i = 0; i < 1; i++) {
     const zombie = new Vehicle(random(width), random(height), zombieimage);
     zombie.r = 30;
@@ -51,21 +51,21 @@ function setup() {
 
   obstacles.push(new Obstacle(width / 2, height / 2, 100, obstacleimage));
 
-  // Wait for a user gesture (like a click) to initialize the audio context
+  //on configure le click de souris comme etant le button pour activation d'audio sur browser
   document.body.addEventListener('click', startAudioContextOnce, { once: true });
 }
 
-// Initialize the audio context after a user gesture (click)
+// initialisation du audio context apres interaction d'utilisateur (click)
 function startAudioContextOnce() {
   if (!isAudioContextInitialized) {
     audioContext = new (window.AudioContext || window.webkitAudioContext)();
     zombieroar.setVolume(0.5);
     zombieeat.setVolume(0.5);
-    isAudioContextInitialized = true; // Ensure the context is initialized only once
+    isAudioContextInitialized = true; //s'assure que le contexte audio est active
   }
 }
 
-// Main draw loop
+
 function draw() {
   image(bgImage, 0, 0, width, height);
   background(0, 0, 0, 0);
@@ -76,26 +76,27 @@ function draw() {
   noStroke();
   ellipse(target.x, target.y, 50);
 
-  // Draw obstacles
+  // dessins d'obstacles
   obstacles.forEach(o => o.show());
 
-  // Handle zombies
+  // comportements de zombies
   zombies.forEach(zombie => {
     const wanderForce = zombie.wander();
     wanderForce.mult(0.3);
     zombie.applyForce(wanderForce);
 
-    const detectionRadius = 100;
+    const detectionRadius = 70;
     noFill();
     stroke("yellow");
     ellipse(zombie.pos.x, zombie.pos.y, detectionRadius * 2);
 
-    // Seek closest human
+    // trouver l'humain le plus proche
     const closestHuman = zombie.getVehiculeLePlusProche(humans);
     if (closestHuman) {
       const d = p5.Vector.dist(zombie.pos, closestHuman.pos);
       if (d < detectionRadius) {
         if (isAudioContextInitialized && !zombieroar.isPlaying()) {
+          //faire un cri si un humain est proche
           zombieroar.play();
         }
         const seekForce = zombie.seek(closestHuman.pos);
@@ -104,6 +105,7 @@ function draw() {
       }
       if (d < 5) {
         if (isAudioContextInitialized && !zombieeat.isPlaying()) {
+          //un son de manger humain
           zombieeat.play();
         }
         const index = humans.indexOf(closestHuman);
@@ -126,10 +128,30 @@ function draw() {
     zombie.show();
   });
 
-  // Handle humans
-  humans.forEach(human => {
+  // Comportements humains
+  humans.forEach((human,index) => {
+    switch(mode){
+
+    case"snake":
+    if(index===0){
+      //premier humain suit la souris et guide les autres en snake en evitant les obstacles
+      steeringForce=human.arrive(target,0);
+      human.applyForce(steeringForce);
+      const avoidForce = human.avoidCorrige(obstacles);
+      human.applyForce(avoidForce);
+
+    }else{
+      let humanprecedent=humans[index-1];
+      steeringForce=human.arrive(humanprecedent.pos,100);
+      human.applyForce(steeringForce);
+      const avoidForce = human.avoidCorrige(obstacles);
+      human.applyForce(avoidForce);
+    }
+
+    break;
+    case"wander":
     const wanderForce = human.wander();
-    wanderForce.mult(0.1);
+    wanderForce.mult(1);
     const seekMouseForce = human.seek(target);
     seekMouseForce.mult(0.5);
     const avoidForce = human.avoidCorrige(obstacles);
@@ -137,6 +159,18 @@ function draw() {
 
     human.applyForce(wanderForce);
     human.applyForce(seekMouseForce);
+    break;
+      //pour fair le flee tout en evitant les zombies
+    case "flee":
+      const wanderForceflee = human.wander();
+      wanderForceflee.mult(1);
+      let fleeforce=human.fleeZombies(zombies);
+      human.applyForce(fleeforce);
+      const avoidForceforflee = human.avoidCorrige(obstacles);
+      human.applyForce(avoidForceforflee);
+      human.applyForce(wanderForceflee);
+      break;
+  }
 
     human.edges();
     human.update();
@@ -154,6 +188,15 @@ function keyPressed() {
   }
   if (key == "o") {
     obstacles.push(new Obstacle(random(width), random(height), random(20, 100), obstacleimage));
+  }
+  if(key=="s"){
+    mode="snake";
+  }
+  if(key=="w"){
+    mode="wander";
+  }
+  if(key=="e"){
+    mode="flee";
   }
   if (key == "d") {
     Vehicle.debug = !Vehicle.debug;
