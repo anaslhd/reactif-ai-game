@@ -137,7 +137,7 @@ class Vehicle {
 
     let seekForce = this.arrive(target);
     let avoidForce = this.avoidCorrige(obstacles);
-    let separateForce = this.separate(vehicules);
+    let separateForce = this.separate(zombies);
     let force = this.wander();
     this.applyForce(force);
     //let boudariesForce = this.boundaries();
@@ -521,15 +521,16 @@ class Vehicle {
 
     // on remet l'accélération à zéro
     this.acc.set(0, 0);
+    
 
     // mise à jour du path (la trainée derrière)
-    this.ajoutePosAuPath();
+    //this.ajoutePosAuPath();
 
     // durée de vie
     this.dureeDeVie -= 0.01;
   }
 
-  ajoutePosAuPath() {
+  /*ajoutePosAuPath() {
     // on rajoute la position courante dans le tableau
     this.path.push(this.pos.copy());
 
@@ -537,7 +538,7 @@ class Vehicle {
     if (this.path.length > this.pathMaxLength) {
       this.path.shift();
     }
-  }
+  }*/s
 
   // On dessine le véhicule, le chemin etc.
   show() {

@@ -1,120 +1,167 @@
 let pursuer1, pursuer2;
 let target;
 let obstacles = [];
-let vehicules = [];
-let zombies=[];
-let humans=[];
-//variable pour image background
+let zombies = [];
+let humans = [];
+let labelnbrzombies;
+let labelnbrhumains;
 let bgImage;
-//variable pour image zombie
 let zombieimage;
-//variable pour image humain
 let humanimage;
 let obstacleimage;
+let zombieroar;
+let zombieeat;
+let audioContext;
+let isAudioContextInitialized = false;
 
 function preload(){
-  //on charge l'image de background
+  // Load assets
   bgImage = loadImage("./assets/image.png");
-  //on charge l'image de zombie
-  zombieimage= loadImage("./assets/zombie.png");
-  obstacleimage=loadImage("./assets/obstacle.png");
-
+  zombieimage = loadImage("./assets/zombie.png");
+  obstacleimage = loadImage("./assets/obstacle.png");
+  humanimage = loadImage('./assets/rick.png');
+  
+  // Load sounds
+  zombieroar = loadSound('./assets/zombieroar.mp3');
+  zombieeat = loadSound('./assets/zombieeating.mp3');
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  pursuer1 = new Vehicle(50, 50,zombieimage);
-  pursuer2 = new Vehicle(random(width), random(height));
-    for(let i=0;i<10;i++){
-      const zombie=new Vehicle(50,50,zombieimage)
-      zombie.r=random(8,40);
-      vehicules.push(zombie);
 
-    }
- 
-  
+  // Initialize zombies and humans
+  for (let i = 0; i < 1; i++) {
+    const zombie = new Vehicle(random(width), random(height), zombieimage);
+    zombie.r = 30;
+    zombie.maxSpeed = 7;
+    zombie.maxForce = 0.5;
+    zombies.push(zombie);
+  }
 
-  
-  //vehicules.push(pursuer2);
+  for (let i = 0; i < 10; i++) {
+    const human = new Vehicle(random(width), random(height), humanimage);
+    human.r = 30;
+    humans.push(human);
+  }
 
-  // On cree un obstace au milieu de l'écran
-  // un cercle de rayon 100px
-  // TODO
+  labelnbrzombies = createP("Nbr de zombies: " + zombies.length);
+  labelnbrzombies.style('color', 'white');
+  labelnbrzombies.style('z-index', '10');
+  labelnbrzombies.position(10, 100);
+
   obstacles.push(new Obstacle(width / 2, height / 2, 100, obstacleimage));
+
+  // Wait for a user gesture (like a click) to initialize the audio context
+  document.body.addEventListener('click', startAudioContextOnce, { once: true });
 }
-//fonction pour la creation dynamique de sliders
-function creerUnSlider(label, tabVehicules, min, max, val, step, posX, posY, propriete) {
-  let slider = createSlider(min, max, val, step);
-  
-  let labelP = createP(label);
-  labelP.position(posX, posY);
-  labelP.style('color', 'white');
 
-  slider.position(posX + 150, posY + 17);
-
-  let valueSpan = createSpan(slider.value());
-  valueSpan.position(posX + 300, posY+17);
-  valueSpan.style('color', 'white');
-  valueSpan.html(slider.value());
-
-  slider.input(() => {
-    valueSpan.html(slider.value());
-    tabVehicules.forEach(vehicle => {
-      vehicle[propriete] = slider.value();
-    });
-  });
-
-  return slider;
+// Initialize the audio context after a user gesture (click)
+function startAudioContextOnce() {
+  if (!isAudioContextInitialized) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    zombieroar.setVolume(0.5);
+    zombieeat.setVolume(0.5);
+    isAudioContextInitialized = true; // Ensure the context is initialized only once
+  }
 }
+
+// Main draw loop
 function draw() {
-  // changer le dernier param (< 100) pour effets de trainée
-  image(bgImage,0,0,width,height);
-  background(0, 0, 0, 100);
+  image(bgImage, 0, 0, width, height);
+  background(0, 0, 0, 0);
+  labelnbrzombies.html("Nbr de zombies: " + zombies.length);
 
   target = createVector(mouseX, mouseY);
-
-  // Dessin de la cible qui suit la souris
-  // Dessine un cercle de rayon 32px à la position de la souris
-  fill(255, 0, 0);
+  fill(0, 255, 0, 100);
   noStroke();
-  circle(target.x, target.y, 32);
+  ellipse(target.x, target.y, 50);
 
-  // dessin des obstacles
-  // TODO
-  obstacles.forEach(o => {
-    o.show();
-  })
+  // Draw obstacles
+  obstacles.forEach(o => o.show());
 
-  vehicules.forEach(v => {
-    // pursuer = le véhicule poursuiveur, il vise un point devant la cible
-    v.applyBehaviors(target, obstacles, vehicules);
+  // Handle zombies
+  zombies.forEach(zombie => {
+    const wanderForce = zombie.wander();
+    wanderForce.mult(0.3);
+    zombie.applyForce(wanderForce);
 
-    // déplacement et dessin du véhicule et de la target
-    v.update();
-    v.show();
-    v.edges();
+    const detectionRadius = 100;
+    noFill();
+    stroke("yellow");
+    ellipse(zombie.pos.x, zombie.pos.y, detectionRadius * 2);
+
+    // Seek closest human
+    const closestHuman = zombie.getVehiculeLePlusProche(humans);
+    if (closestHuman) {
+      const d = p5.Vector.dist(zombie.pos, closestHuman.pos);
+      if (d < detectionRadius) {
+        if (isAudioContextInitialized && !zombieroar.isPlaying()) {
+          zombieroar.play();
+        }
+        const seekForce = zombie.seek(closestHuman.pos);
+        seekForce.mult(1.5);
+        zombie.applyForce(seekForce);
+      }
+      if (d < 5) {
+        if (isAudioContextInitialized && !zombieeat.isPlaying()) {
+          zombieeat.play();
+        }
+        const index = humans.indexOf(closestHuman);
+        const deadHuman = humans[index];
+        humans.splice(index, 1);
+
+        const newZombie = new Vehicle(deadHuman.pos.x, deadHuman.pos.y, zombieimage);
+        newZombie.r = 30;
+        newZombie.maxSpeed = 4;
+        newZombie.maxForce = 0.5;
+        zombies.push(newZombie);
+      }
+    }
+
+    const avoidForce = zombie.avoidCorrige(obstacles);
+    zombie.applyForce(avoidForce);
+
+    zombie.edges();
+    zombie.update();
+    zombie.show();
+  });
+
+  // Handle humans
+  humans.forEach(human => {
+    const wanderForce = human.wander();
+    wanderForce.mult(0.1);
+    const seekMouseForce = human.seek(target);
+    seekMouseForce.mult(0.5);
+    const avoidForce = human.avoidCorrige(obstacles);
+    human.applyForce(avoidForce);
+
+    human.applyForce(wanderForce);
+    human.applyForce(seekMouseForce);
+
+    human.edges();
+    human.update();
+    human.show();
   });
 }
 
 function mousePressed() {
-  // TODO : ajouter un obstacle de taille aléatoire à la position de la souris
-  obstacles.push(new Obstacle(mouseX, mouseY, random(20, 100), obstacleimage)); // Pass the image
+  obstacles.push(new Obstacle(mouseX, mouseY, random(20, 100), obstacleimage));
 }
 
 function keyPressed() {
   if (key == "v") {
-    vehicules.push(new Vehicle(random(width), random(height),zombieimage));
+    zombies.push(new Vehicle(random(width), random(height), zombieimage));
+  }
+  if (key == "o") {
+    obstacles.push(new Obstacle(random(width), random(height), random(20, 100), obstacleimage));
   }
   if (key == "d") {
     Vehicle.debug = !Vehicle.debug;
   } else if (key == "f") {
-    // on crée 10 véhicules à des position random espacées de 50px
-    // en x = 20, y = hauteur du  canvas sur deux
     for (let i = 0; i < 10; i++) {
-      let v = new Vehicle(20, 300,zombieimage)
-      // vitesse aléatoire
+      let v = new Vehicle(20, 300, zombieimage);
       v.vel = new p5.Vector(random(1, 5), random(1, 5));
-      vehicules.push(v);
+      zombies.push(v);
     }
   }
 }
