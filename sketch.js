@@ -14,6 +14,11 @@ let zombieeat;
 let audioContext;
 let isAudioContextInitialized = false;
 let mode ="snake";
+//le jeu dure 60 seconds
+let timer=10;
+let gameStarted=false;
+let gameEnded=false;
+let startTime;
 
 function preload(){
   // on charge les images
@@ -25,15 +30,21 @@ function preload(){
   // on charge les sons
   zombieroar = loadSound('./assets/zombieroar.mp3');
   zombieeat = loadSound('./assets/zombieeating.mp3');
+
+
 }
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+
+
+  startTime=millis();
+  gameStarted=true;
 //on initialise les zombies et les humains
   for (let i = 0; i < 1; i++) {
     const zombie = new Vehicle(random(width), random(height), zombieimage);
     zombie.r = 30;
-    zombie.maxSpeed = 7;
+    zombie.maxSpeed = 4;
     zombie.maxForce = 0.5;
     zombies.push(zombie);
   }
@@ -75,9 +86,35 @@ function draw() {
   fill(0, 255, 0, 100);
   noStroke();
   ellipse(target.x, target.y, 50);
+  if (gameStarted && !gameEnded) {
+    // Check for timer and update every second
+    let elapsedTime = millis() - startTime;
+    timer = 60 - Math.floor(elapsedTime / 1000); // Subtract elapsed seconds from 60 to get remaining time
+
+    // Check if the game time is over
+    if (timer <= 0) {
+      gameEnded = true;  // End the game once the time is up
+      if (humans.length > 0) {
+        window.location.href='game-won.html'  // If there are humans alive, display Game Won screen
+      } else {
+        window.location.href='game-over.html';  // If no humans are alive, display Game Over screen
+      }
+    } else {
+      if(humans.length===0){
+        window.location.href="game-over.html";
+      }
+      else{
+      // Show timer (optional, for visibility)
+      fill(255);
+      textSize(32);
+      textAlign(CENTER, CENTER);
+      text(`Time Left: ${timer}s`, width / 2, 50);}
+    }
+  }
 
   // dessins d'obstacles
   obstacles.forEach(o => o.show());
+
 
   // comportements de zombies
   zombies.forEach(zombie => {
@@ -127,6 +164,7 @@ function draw() {
     zombie.update();
     zombie.show();
   });
+  let steeringForce;
 
   // Comportements humains
   humans.forEach((human,index) => {
@@ -142,7 +180,8 @@ function draw() {
 
     }else{
       let humanprecedent=humans[index-1];
-      steeringForce=human.arrive(humanprecedent.pos,100);
+      //snakepos=createVector(humanprecedent.pos.x+50,humanprecedent.pos.y);
+      steeringForce=human.arrive(humanprecedent.pos,50);
       human.applyForce(steeringForce);
       const avoidForce = human.avoidCorrige(obstacles);
       human.applyForce(avoidForce);
@@ -177,6 +216,9 @@ function draw() {
     human.show();
   });
 }
+
+
+
 
 function mousePressed() {
   obstacles.push(new Obstacle(mouseX, mouseY, random(20, 100), obstacleimage));

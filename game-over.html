@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Over</title>
+  <style>
+    body {
+      background-color: #f44336; /* Red background */
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+    }
+    h1 {
+      font-size: 3em;
+    }
+    .message {
+      font-size: 2em;
+      margin-bottom: 20px;
+    }
+    .button {
+      background-color: white;
+      color: red;
+      padding: 10px 20px;
+      font-size: 1.5em;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div>
+    <h1>Game Over</h1>
+    <div class="message">Unfortunately, all humans are dead.</div>
+    <button class="button" onclick="restartGame()">Restart Game</button>
+  </div>
+
+  <script>
+    function restartGame() {
+      // Redirect to the main game page (game.html or whatever your game page is named)
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
