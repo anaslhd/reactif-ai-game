@@ -266,7 +266,8 @@ class Vehicle {
     ahead2.mult(0.5);
 
     // on le dessine avec ma méthode this.drawVector(pos vecteur, color)
-    this.drawVector(this.pos, ahead, "yellow");
+    if(Vehicle.debug){
+    this.drawVector(this.pos, ahead, "yellow");}
 
     // Calcul des coordonnées du point au bout de ahead
     let pointAuBoutDeAhead = this.pos.copy().add(ahead);
@@ -670,6 +671,7 @@ class Vehicle {
 
     // draw velocity vector
     pop();
+   
     this.drawVector(this.pos, this.vel, color(255, 0, 0));
 
     // Cercle pour évitement entre vehicules et obstacles
