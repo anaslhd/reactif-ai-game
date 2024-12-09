@@ -38,9 +38,9 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   creerUnSlider("Rayon du cercle", 10, 200, 50, 1, 10, 20, "wanderRadius");
   creerUnSlider("Distance du cercle", 10, 400, 100, 1, 10, 40, "distanceCercle");
-  creerUnSlider("Deviation maxi", 0, PI/2, 0.3, 0.01, 10, 60, "displaceRange");
-  creerUnSlider("Vitesse maxi", 1, 20, 4, 0.1, 10, 80, "maxSpeed");
-  creerUnSlider("Max force", 0.05, 1, 0.2, 0.1, 10, 100, "maxForce");
+  creerUnSlider("Deviation maxi human", 0, PI/2, 0.3, 0.01, 10, 60, "displaceRange");
+  creerUnSlider("Vitesse maxi human", 1, 20, 4, 0.1, 10, 80, "maxSpeed");
+  creerUnSlider("Max force human", 0.05, 1, 0.2, 0.1, 10, 100, "maxForce");
 
 
   startTime=millis();
@@ -63,7 +63,33 @@ function setup() {
   labelnbrzombies = createP("Nbr de zombies: " + zombies.length);
   labelnbrzombies.style('color', 'white');
   labelnbrzombies.style('z-index', '10');
-  labelnbrzombies.position(10, 100);
+  labelnbrzombies.position(10, 120);
+
+  labelsnake = createP("Appuyer sur le boutton S pour le Snake");
+  labelsnake.style('color', 'white');
+  labelsnake.style('z-index', '20');
+  labelsnake.position(10, 140);
+
+  labelwander = createP("Appuyer sur le boutton W pour le Wander");
+  labelwander.style('color', 'white');
+  labelwander.style('z-index', '20');
+  labelwander.position(10, 160);
+
+  labelflee = createP("Appuyer sur le boutton E pour le flee");
+  labelflee.style('color', 'white');
+  labelflee.style('z-index', '20');
+  labelflee.position(10, 180);
+  
+  labelobs = createP("Appuyer sur le boutton O pour ajouter un obstacle");
+  labelobs.style('color', 'white');
+  labelobs.style('z-index', '20');
+  labelobs.position(10, 200);
+
+  labelobs = createP("Appuyer sur le boutton F pour ajouter des zombies");
+  labelobs.style('color', 'white');
+  labelobs.style('z-index', '20');
+  labelobs.position(10, 220);
+
 
   obstacles.push(new Obstacle(width / 2, height / 2, 100, obstacleimage));
 
@@ -247,10 +273,10 @@ function draw() {
 
 
 
-
-function mousePressed() {
+//remplacer par le boutton O
+/*function mousePressed() {
   obstacles.push(new Obstacle(mouseX, mouseY, random(20, 100), obstacleimage));
-}
+}*/
 
 function keyPressed() {
   if (key == "v") {
@@ -271,7 +297,7 @@ function keyPressed() {
   if (key == "d") {
     Vehicle.debug = !Vehicle.debug;
   } else if (key == "f") {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 5; i++) {
       let v = new Vehicle(20, 300, zombieimage);
       v.vel = new p5.Vector(random(1, 5), random(1, 5));
       zombies.push(v);
