@@ -101,7 +101,9 @@ function draw() {
       }
     } else {
       if(humans.length===0){
-        window.location.href="game-over.html";
+        setTimeout(function() {
+          window.location.href = "game-over.html";
+        }, 1000);
       }
       else{
       // Show timer (optional, for visibility)
