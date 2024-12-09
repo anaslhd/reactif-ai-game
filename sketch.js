@@ -36,6 +36,11 @@ function preload(){
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  creerUnSlider("Rayon du cercle", 10, 200, 50, 1, 10, 20, "wanderRadius");
+  creerUnSlider("Distance du cercle", 10, 400, 100, 1, 10, 40, "distanceCercle");
+  creerUnSlider("Deviation maxi", 0, PI/2, 0.3, 0.01, 10, 60, "displaceRange");
+  creerUnSlider("Vitesse maxi", 1, 20, 4, 0.1, 10, 80, "maxSpeed");
+  creerUnSlider("Max force", 0.05, 1, 0.2, 0.1, 10, 100, "maxForce");
 
 
   startTime=millis();
@@ -74,6 +79,27 @@ function startAudioContextOnce() {
     zombieeat.setVolume(0.5);
     isAudioContextInitialized = true; //s'assure que le contexte audio est active
   }
+}
+function creerUnSlider(label, min, max, val, step, posX, posY, propriete) {
+  let slider = createSlider(min, max, val, step);
+  
+  let labelP = createP(label);
+  labelP.position(posX, posY);
+  labelP.style('color', 'white');
+
+  slider.position(posX + 150, posY + 17);
+
+  let valueSpan = createSpan(slider.value());
+  valueSpan.position(posX + 300, posY+17);
+  valueSpan.style('color', 'white');
+  valueSpan.html(slider.value());
+
+  slider.input(() => {
+    valueSpan.html(slider.value());
+    humans.forEach(human => {
+      human[propriete] = slider.value();
+    });
+  });
 }
 
 
