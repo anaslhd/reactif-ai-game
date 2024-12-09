@@ -316,7 +316,8 @@ class Vehicle {
         force = p5.Vector.sub(pointAuBoutDeAhead2, obstacleLePlusProche.pos);
       }
       // on le dessine en jaune pour vérifier qu'il est ok (dans le bon sens etc)
-      this.drawVector(obstacleLePlusProche.pos, force, "yellow");
+      if(Vehicle.debug){
+      this.drawVector(obstacleLePlusProche.pos, force, "yellow");}
 
       // Dessous c'est l'ETAPE 2 : le pilotage (comment on se dirige vers la cible)
       // on limite ce vecteur à la longueur maxSpeed
@@ -627,21 +628,23 @@ class Vehicle {
     if (this.path.length > this.pathMaxLength) {
       this.path.shift();
     }
-  }*/s
+  }*/
 
   // On dessine le véhicule, le chemin etc.
   show() {
     // dessin du chemin
     //this.drawPath();
     // dessin du vehicule
+    
     this.drawVehicle();
   }
 
   drawVehicle() {
+    if(Vehicle.debug){
     // formes fil de fer en blanc
     stroke(255);
     // épaisseur du trait = 2
-    strokeWeight(2);
+    strokeWeight(2);}
 
     // formes pleines
     //fill(this.color);
@@ -671,8 +674,9 @@ class Vehicle {
 
     // draw velocity vector
     pop();
+    if(Vehicle.debug){
    
-    this.drawVector(this.pos, this.vel, color(255, 0, 0));
+    this.drawVector(this.pos, this.vel, color(255, 0, 0));}
 
     // Cercle pour évitement entre vehicules et obstacles
     if (Vehicle.debug) {

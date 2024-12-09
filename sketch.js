@@ -212,9 +212,10 @@ function draw() {
     zombie.applyForce(wanderForce);
 
     const detectionRadius = 70;
+    if(Vehicle.debug){
     noFill();
     stroke("yellow");
-    ellipse(zombie.pos.x, zombie.pos.y, detectionRadius * 2);
+    ellipse(zombie.pos.x, zombie.pos.y, detectionRadius * 2);}
 
     // trouver l'humain le plus proche
     const closestHuman = zombie.getVehiculeLePlusProche(humans);
