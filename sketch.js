@@ -95,7 +95,12 @@ function setup() {
   labeladdzom = createP("Appuyer sur le button F pour ajouter 5 zombies");
   labeladdzom.style('color', 'white');
   labeladdzom.style('z-index', '20');
-  labeladdzom.position(10, 260);
+  labeladdzom.position(10, 280);
+
+  labeldebug = createP("Appuyer sur le button D pour débboguer");
+  labeldebug.style('color', 'white');
+  labeldebug.style('z-index', '20');
+  labeldebug.position(10, 300);
   
 
 
