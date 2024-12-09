@@ -41,6 +41,8 @@ function setup() {
   creerUnSlider("Deviation maxi human", 0, PI/2, 0.3, 0.01, 10, 60, "displaceRange");
   creerUnSlider("Vitesse maxi human", 1, 20, 4, 0.1, 10, 80, "maxSpeed");
   creerUnSlider("Max force human", 0.05, 1, 0.2, 0.1, 10, 100, "maxForce");
+  creerUnSliderZombie("Vitesse maxi Zombie", 1, 20, 4, 0.1, 10, 120, "maxSpeed");
+  creerUnSliderZombie("Max force Zombie", 0.05, 1, 0.2, 0.1, 10, 140, "maxForce");
 
 
   startTime=millis();
@@ -63,32 +65,34 @@ function setup() {
   labelnbrzombies = createP("Nbr de zombies: " + zombies.length);
   labelnbrzombies.style('color', 'white');
   labelnbrzombies.style('z-index', '10');
-  labelnbrzombies.position(10, 120);
+  labelnbrzombies.position(10, 160);
 
   labelsnake = createP("Appuyer sur le boutton S pour le Snake");
   labelsnake.style('color', 'white');
   labelsnake.style('z-index', '20');
-  labelsnake.position(10, 140);
+  labelsnake.position(10, 180);
 
   labelwander = createP("Appuyer sur le boutton W pour le Wander");
   labelwander.style('color', 'white');
   labelwander.style('z-index', '20');
-  labelwander.position(10, 160);
+  labelwander.position(10, 200);
 
   labelflee = createP("Appuyer sur le boutton E pour le flee");
   labelflee.style('color', 'white');
   labelflee.style('z-index', '20');
-  labelflee.position(10, 180);
+  labelflee.position(10, 220);
   
   labelobs = createP("Appuyer sur le boutton O pour ajouter un obstacle");
   labelobs.style('color', 'white');
   labelobs.style('z-index', '20');
-  labelobs.position(10, 200);
+  labelobs.position(10, 240);
 
-  labelobs = createP("Appuyer sur le boutton F pour ajouter des zombies");
+  labelobs = createP("Click droit active le son");
   labelobs.style('color', 'white');
   labelobs.style('z-index', '20');
-  labelobs.position(10, 220);
+  labelobs.position(10, 260);
+  
+
 
 
   obstacles.push(new Obstacle(width / 2, height / 2, 100, obstacleimage));
@@ -124,6 +128,27 @@ function creerUnSlider(label, min, max, val, step, posX, posY, propriete) {
     valueSpan.html(slider.value());
     humans.forEach(human => {
       human[propriete] = slider.value();
+    });
+  });
+}
+function creerUnSliderZombie(label, min, max, val, step, posX, posY, propriete) {
+  let slider = createSlider(min, max, val, step);
+  
+  let labelP = createP(label);
+  labelP.position(posX, posY);
+  labelP.style('color', 'white');
+
+  slider.position(posX + 150, posY + 17);
+
+  let valueSpan = createSpan(slider.value());
+  valueSpan.position(posX + 300, posY+17);
+  valueSpan.style('color', 'white');
+  valueSpan.html(slider.value());
+
+  slider.input(() => {
+    valueSpan.html(slider.value());
+    zombies.forEach(zombie => {
+      zombie[propriete] = slider.value();
     });
   });
 }
@@ -205,8 +230,9 @@ function draw() {
 
         const newZombie = new Vehicle(deadHuman.pos.x, deadHuman.pos.y, zombieimage);
         newZombie.r = 30;
-        newZombie.maxSpeed = 4;
-        newZombie.maxForce = 0.5;
+        //puisque c'est modifie par un slider je l'ai mis comme ceci pour que le zombie ait la même vitesse que le reste!
+        newZombie.maxSpeed = zombies[0].maxSpeed;
+        newZombie.maxForce = zombies[0].maxForce;
         zombies.push(newZombie);
       }
     }
@@ -279,9 +305,9 @@ function draw() {
 }*/
 
 function keyPressed() {
-  if (key == "v") {
+  /*if (key == "v") {
     zombies.push(new Vehicle(random(width), random(height), zombieimage));
-  }
+  }*/
   if (key == "o") {
     obstacles.push(new Obstacle(random(width), random(height), random(20, 100), obstacleimage));
   }
